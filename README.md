@@ -245,7 +245,9 @@ This example shows how to subscribe to an topic and display it using the **debug
 
 ##### Example
 
-This example shows how to publish to an topic and display the published message using the **debug** node. It is based on the available topics of an EduArt's robot like Eduard.
+This example shows how to publish to an topic and display the published message using the **debug** node. 
+It is based on the available topics of an EduArt's robot like Eduard.
+>Note: For publisher it is necessary to add the `QoS.reliability=BEST_EFFORT`!
 
 ![Publisher Example](docs/ros-publishing.gif)
 
