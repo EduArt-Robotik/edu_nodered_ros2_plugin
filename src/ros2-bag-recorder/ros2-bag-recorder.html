@@ -1,0 +1,318 @@
+<!--Properties that can be configured for this node-->
+<script type="text/html" data-template-name="ROS2 Bag Recorder">
+    <div class="form-row">
+        <label for="node-input-topic"><i class="fa fa-archive"></i>&nbsp;&nbsp; Package </label>
+        <select id="node-input-topic-select">
+	        <option value=""></option>
+        </select>
+        <input id="node-input-ros2pkg" type="hidden">
+    </div>
+    <div class="form-row">
+        <label for="node-input-ros2msg"><i class="fa fa-envelope"></i>&nbsp;&nbsp; Action </label>
+        <select id="node-input-ros2action-select">
+	        <option value=""></option>
+	    </select>
+        <input id="node-input-ros2action" type="hidden">
+    </div>
+
+    <div class="form-row" id="editors">
+        <p id=button-idl-editor style="display:none"><i class="fa fa-chevron-down"></i>&nbsp;&nbsp; IDL Code</p>
+        <div class="form-row" id="idl-editor" style="display:none">
+            <div class="form-row" style="margin-bottom: 0px;">
+                <input type="hidden" id="node-input-idl" autofocus="autofocus">
+            </div>
+
+            <div class="form-row node-text-editor-row" style="position:relative">
+                <div style="height: 220px; min-height:120px; margin-top: 8px;" class="node-text-editor" id="node-input-idl-editor" ></div>
+            </div>
+        </div>
+
+        <p id=button-msg-editor style="display:none"><i class="fa fa-chevron-down"></i>&nbsp;&nbsp; MSG Code</p>
+        <div class="form-row" id="msg-editor" style="display:none">
+            <div class="form-row" style="margin-bottom: 0px;">
+                <input type="hidden" id="node-input-message" autofocus="autofocus">
+            </div>
+
+            <div class="form-row node-text-editor-row" style="position:relative">
+                <div style="height: 250px; min-height:150px; margin-top: 8px;" class="node-text-editor" id="node-input-msg-editor" ></div>
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<!--Node style definition-->
+<script type="text/javascript">
+    RED.nodes.registerType('ROS2 Bag Recorder',
+    {
+        category: 'ROS 2',
+        color: "#fdd0a2",
+        defaults:
+        {
+            ros2pkg: {value: "", required: true},
+            ros2action: {value: "", required: true}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "ros2-icon.svg",
+        label: function()
+        {
+            if (this.ros2pkg && this.ros2action)
+            {
+                return this.ros2pkg + '/' + this.ros2action;
+            }
+            else
+            {
+                return "ROS2 Bag Recorder";
+            }
+        },
+        oneditprepare: function()
+        {
+            var node = this;
+            console.log("oneditprepare");
+            console.log(this.ros2pkg);
+            console.log(this.ros2action);
+            if (this.ros2pkg)
+            {
+                $("#node-input-topic-select").empty();
+                $("<option value='" + this.ros2pkg + "'>" + this.ros2pkg + "</option>").appendTo("#node-input-topic-select");
+            }
+            if (this.ros2action)
+            {
+                $("#node-input-ros2action-select").empty();
+                $("<option value='" + this.ros2action + "'>" + this.ros2action + "</option>").appendTo("#node-input-ros2action-select");
+            }
+
+            var buildEditor = function(id, value, defaultValue) {
+                var editor = RED.editor.createEditor({
+                    id: id,
+                    mode: 'ace/mode/text',
+                    value: value || defaultValue || "",
+                    globals: {
+                        msg:true,
+                        context:true,
+                        RED: true,
+                        util: true,
+                        flow: true,
+                        global: true,
+                        console: true,
+                        Buffer: true,
+                        setTimeout: true,
+                        clearTimeout: true,
+                        setInterval: true,
+                        clearInterval: true
+                    },
+                    readOnly: true
+                });
+                if (defaultValue && value === "") {
+                    editor.moveCursorTo(defaultValue.split("\n").length - 1, 0);
+                }
+                return editor;
+            };
+
+            var getHeight = function()
+            {
+                var rows = $("#dialog-form>div:not(#editors)");
+                var height = $("#dialog-form").height();
+                for (var i=0; i<rows.length; i++) {
+                    height -= $(rows[i]).outerHeight(true);
+                }
+                var editorRow = $("#dialog-form>div#editors");
+                height -= (parseInt(editorRow.css("marginTop"))+parseInt(editorRow.css("marginBottom"))) + 20;
+                height /= 2;
+                return height;
+            };
+
+            $("#node-input-topic-select").mousedown(function () {
+                if (!$("#node-input-topic-select").is(":focus"))
+                {
+                    //Gets the IS ROS 2 compiled packages and add them to the packages selector
+                    $.getJSON('ros2actionpackages', function(data)
+                    {
+                        console.log(data);
+                        $("#node-input-topic-select").empty();
+                        $("<option></option>").appendTo("#node-input-topic-select");
+                        $.each(data, function(i, package)
+                        {
+                            $("<option value='" + package + "'>" + package + "</option>").appendTo("#node-input-topic-select");
+                        });
+                    });
+                }
+            });
+
+            //Everytime the packages selector changes, it gets the IS ROS 2 selected package messages and add them
+            //to the messages selector
+            $("#node-input-topic-select").change(function()
+            {
+                $.getJSON('ros2actions', { package: $("#node-input-topic-select").val().toString() },  function(set)
+                {
+                    $("#node-input-ros2action-select").empty();
+                    $("<option></option>").appendTo("#node-input-ros2action-select");
+                    $.each(set, function(i, message)
+                    {
+                        message = message.replace('.mix', '');
+                        $("<option value='" + message + "'>" + message + "</option>").appendTo("#node-input-ros2action-select");
+                    });
+                });
+            });
+
+            $("#button-msg-editor").click(function()
+            {
+                $("#msg-editor").toggle();
+            });
+
+            $("#button-idl-editor").click(function()
+            {
+                $("#idl-editor").toggle();
+            });
+
+            $("#node-input-ros2action-select").mousedown(function () {
+                if (!$("#node-input-ros2action-select").is(":focus"))
+                {
+                    $.getJSON('ros2actions', { package: $("#node-input-topic-select").val().toString() },  function(set)
+                    {
+                        $("#node-input-ros2action-select").empty();
+                        $("<option></option>").appendTo("#node-input-ros2action-select");
+                        $.each(set, function(i, message)
+                        {
+                            message = message.replace('.mix', '');
+                            $("<option value='" + message + "'>" + message + "</option>").appendTo("#node-input-ros2action-select");
+                        });
+                    });
+                }
+            });
+
+            $("#node-input-ros2action-select").change(function()
+            {
+                this.message = {};
+                if (!this.initEditor)
+                {
+                    this.initEditor = buildEditor("node-input-msg-editor", $("#node-input-message").val())
+                }
+                $("#node-input-msg-editor").css("height", (getHeight())+"px");
+                this.initEditor.resize();
+
+                if (!this.editor)
+                {
+                    this.editor = buildEditor('node-input-idl-editor', $("#node-input-idl").val())
+                }
+                $("#node-input-idl-editor").css("height", (getHeight())+"px");
+                this.editor.resize();
+
+                var n = this;
+
+                $.getJSON('srvidl', { package: $("#node-input-topic-select").val().toString(),
+                    msg: $("#node-input-ros2action-select").val().toString() },  function(msg)
+                {
+                    n.editor.getSession().getDocument().setValue(msg["idl"]);
+                    n.initEditor.getSession().getDocument().setValue(msg["srv"]);
+
+                    $("#button-msg-editor").show();
+                    $("#button-idl-editor").show();
+                    $("#idl-editor").show();
+                });
+            });
+        },
+        oneditsave: function()
+        {
+            var node = this;
+
+            // Notify the inject nodes must be modified
+            RED.nodes.eachLink( function(n)
+            {
+                if (n.target.id == node.id) // Input connection
+                {
+                    switch(n.source.type)
+                    {
+                        case 'ROS2 Inject':
+                            RED.notify("The type has been changed, open inject node and fill the new fields", "warning");
+                            break;
+                    }
+                }
+            });
+
+            node.ros2pkg = $("#node-input-topic-select").val().toString();
+            node.ros2action = $("#node-input-ros2action-select").val().toString();
+            console.log("oneditsave");
+            console.log(node.ros2pkg);
+            console.log(node.ros2action);
+
+            $("#node-input-ros2pkg").val(node.ros2pkg);
+            $("#node-input-ros2action").val(node.ros2action);
+
+            // Update the associated endpoint nodes
+            RED.nodes.eachLink( function(n)
+            {
+                if (n.source.id == node.id)
+                {
+                    switch(n.target.type)
+                    {
+                        case "Action Client":
+                            const selectedtype = node.ros2pkg + '/action/' + node.ros2action;
+                            if (selectedtype !== '/')
+                            {
+                                n.target.selectedtype = selectedtype;
+                            }
+                            break;
+                    }
+                }
+            });
+
+            var disposeEditor = function(editorName, targetName, defaultValue)
+            {
+                var editor = node[editorName];
+                if (editor != undefined)
+                {
+                    editor.destroy();
+                    delete node[editorName];
+                }
+            }
+            disposeEditor("editor","node-input-idl");
+            disposeEditor("initEditor","node-input-message");
+
+        },
+        oneditcancel: function()
+        {
+            var node = this;
+
+            node.editor.destroy();
+            delete node.editor;
+
+            node.initEditor.destroy();
+            delete node.initEditor;
+        }
+    });
+
+    // Event emitted when a link is created
+    RED.events.on("links:add", function(link) {
+        if (link.source.type == 'ROS2 Action Type')
+        {
+            switch(link.target.type)
+            {
+                case "Action Client":
+                    const selectedtype = link.source.ros2pkg + '/action/' + link.source.ros2action;
+                    if (selectedtype !== '/')
+                    {
+                        link.target.selectedtype = selectedtype;
+                    }
+                    break;
+            }
+        }
+    });
+
+</script>
+
+<!--Help text shown for the ros2-type node-->
+<script type="text/html" data-help-name="ROS2 Action Type">
+    <p> This node represents a specific ROS 2 Actions installed and sourced on this system. </p>
+    <h3>Settings</h3>
+        <dl class="message-properties">
+        <dt>Package<span class="property-type"></span></dt>
+        <dd>Name of the ROS 2 package containing the type that want to be used.</dd>
+        <dt>Message<span class="property-type">string</span></dt>
+        <dd>Name of the ROS 2 type that want to be used.</dd>
+        </dl>
+    <h3>Details</h3>
+        <p>This node doesn't have functionality itself. It must be connected to a inject node (ROS2 Inject) or a
+        function node (Publisher or Subscriber).</p>
+</script>
