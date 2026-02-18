@@ -50,6 +50,29 @@ RUN apt-get update \
         ros-$ROS_DISTRO-aruco-opencv-msgs \
         ros-$ROS_DISTRO-zbar-ros-interfaces
 
+# Add custom ROS messages via sources
+RUN echo "Adding custom ROS messages via sources" \
+    # Livox SDK2
+    && cd /tmp \
+    && git clone https://github.com/Livox-SDK/Livox-SDK2.git \
+    && cd Livox-SDK2 \
+    && sed -i '/^#include/a#include <cstdint>' sdk_core/comm/define.h \
+    && sed -i '/^#include/a#include <cstdint>' sdk_core/logger_handler/file_manager.h \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make -j$(nproc) \
+    && make install \
+    && rm -rf /tmp/Livox-SDK2
+    # ROS2 Interface for Livox SDK2
+USER user
+RUN cd /home/user/ros/src \
+    && git clone https://github.com/Livox-SDK/livox_ros_driver2.git \
+    && cd livox_ros_driver2 \
+    && source /opt/ros/$ROS_DISTRO/setup.bash \
+    && ./build.sh humble
+
+USER root
 
 # Install Node-RED and node-red-ros2-plugin
 RUN source /opt/ros/$ROS_DISTRO/setup.bash \
