@@ -1,0 +1,176 @@
+[
+    {
+        "id": "ad162178b784ec06",
+        "type": "tab",
+        "label": "Record Bag File",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "760e8f52e3b23b71",
+        "type": "ui_text_input",
+        "z": "ad162178b784ec06",
+        "name": "",
+        "label": "Bag File Name",
+        "tooltip": "",
+        "group": "b778992137da883f",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "payload.filename",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 440,
+        "y": 600,
+        "wires": [
+            [
+                "830fa027337c07b2"
+            ]
+        ]
+    },
+    {
+        "id": "cec6f55d11724d2f",
+        "type": "ROS2 Bag Recorder",
+        "z": "ad162178b784ec06",
+        "bagFolder": "/home/user",
+        "topics": [
+            "/eduard/blue/imu",
+            "/eduard/blue/odometry"
+        ],
+        "x": 920,
+        "y": 560,
+        "wires": [
+            [
+                "e4cee567c2846e42"
+            ]
+        ]
+    },
+    {
+        "id": "461a7132c4b143f5",
+        "type": "ui_switch",
+        "z": "ad162178b784ec06",
+        "name": "",
+        "label": "Recording Bag",
+        "tooltip": "",
+        "group": "b778992137da883f",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "payload",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "start",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "stop",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 420,
+        "y": 520,
+        "wires": [
+            [
+                "d3eb876f489853a7"
+            ]
+        ]
+    },
+    {
+        "id": "e4cee567c2846e42",
+        "type": "ui_text",
+        "z": "ad162178b784ec06",
+        "group": "b778992137da883f",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Status",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1110,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "d3eb876f489853a7",
+        "type": "function",
+        "z": "ad162178b784ec06",
+        "name": "make nice command",
+        "func": "var msg_out = {\n    payload: {\n        command: msg.payload\n    }\n};\n\nreturn msg_out;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 640,
+        "y": 520,
+        "wires": [
+            [
+                "cec6f55d11724d2f"
+            ]
+        ]
+    },
+    {
+        "id": "830fa027337c07b2",
+        "type": "function",
+        "z": "ad162178b784ec06",
+        "name": "make nice filename",
+        "func": "var msg_out = {\n    payload: {\n        filename: msg.payload\n    }\n};\n\nreturn msg_out;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 600,
+        "wires": [
+            [
+                "cec6f55d11724d2f"
+            ]
+        ]
+    },
+    {
+        "id": "b778992137da883f",
+        "type": "ui_group",
+        "name": "Bag File",
+        "tab": "4fd4459801a9d095",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "4fd4459801a9d095",
+        "type": "ui_tab",
+        "name": "Recording",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "6db01910129de222",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6",
+            "edu-nodered-ros2-plugin": "1.0.1"
+        }
+    }
+]

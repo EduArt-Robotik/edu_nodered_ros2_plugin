@@ -1,8 +1,7 @@
 {
   "name": "eduart-ros",
   // "build" : { "dockerfile": "Dockerfile" },
-  // "image": "eduard-robot-monitoring:0.2.0",
-  "image": "eduartrobotik/eduart-nodered:0.2.3",
+  "image": "eduartrobotik/eduart-nodered:0.4.0",
   "runArgs": [
     "-it",
     // "--gpus",

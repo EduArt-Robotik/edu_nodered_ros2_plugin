@@ -81,7 +81,8 @@
       "ROS2 Service Type": "src/ros2-service-types/ros2-service-types.js",
       "Service Client": "src/service-client/service-client.js",
       "ROS2 Action Type": "src/ros2-action-types/ros2-action-types.js",
-      "Action Client": "src/action-client/action-client.js"
+      "Action Client": "src/action-client/action-client.js",
+      "ROS2 Bag Recorder": "src/ros2-bag-recorder/ros2-bag-recorder.js"
     }
   }
 }
