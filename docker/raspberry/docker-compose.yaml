@@ -1,19 +1,26 @@
 services:
-    eduart-node-red:
-        user: user
-        image: eduartrobotik/eduart-nodered:0.4.0
-        network_mode: host
-        command: node-red --userDir /data
-        restart: always
-        privileged: true
-        ipc: host
-        pid: host
-        environment:
-            - RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION}
-            - CYCLONEDDS_URI=/home/user/ros/launch_content/cyclone_profile.xml   
-        volumes:
-            - node_red_user_data:/data:rw
-            - './launch_content:/home/user/ros/launch_content:r'
+  eduart-node-red:
+    user: user
+    image: eduartrobotik/eduart-nodered:0.4.0
+    container_name: eduart-node-red
+    command: node-red --userDir /data
+    restart: always
+    privileged: true
+    ports:
+      - "1880:1880"
+    environment:
+      - RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+      - ROS_DOMAIN_ID=0
+      - CYCLONEDDS_URI=/home/user/ros/launch_content/cyclone_profile.xml
+    volumes:
+      - node_red_user_data:/data:rw
+      - ./launch_content:/home/user/ros/launch_content:ro
+    networks:
+      - eduart-net
 
 volumes:
-    node_red_user_data:
+  node_red_user_data:
+
+networks:
+  eduart-net:
+    external: true

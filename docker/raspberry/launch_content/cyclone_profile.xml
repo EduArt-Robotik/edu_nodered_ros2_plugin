@@ -8,8 +8,9 @@
         <General>
             <Interfaces>
                 <NetworkInterface name="eth0" priority="10" multicast="true" presence_required="true"/>
-                <NetworkInterface name="wlan0" priority="11" multicast="true" presence_required="false"/>
+                <NetworkInterface name="lo" priority="11" multicast="true" presence_required="false"/>
             </Interfaces>
+
             <AllowMulticast>true</AllowMulticast>
             <MaxMessageSize>65500B</MaxMessageSize>
         </General>
